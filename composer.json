@@ -1,0 +1,18 @@
+{
+  "name": "deimos/migrate",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "rez1dent3",
+      "email": "maksim.babichev95@gmail.com"
+    }
+  ],
+  "require": {
+    "deimos/orm": "~0.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "": "src/"
+    }
+  }
+}
