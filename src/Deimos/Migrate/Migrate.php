@@ -4,6 +4,7 @@ namespace Deimos\Migrate;
 
 use Deimos\ORM\Builder;
 use Deimos\ORM\Reflection;
+use Deimos\ORM\Transaction;
 
 class Migrate
 {
@@ -62,7 +63,13 @@ class Migrate
         $iterator      = new \RecursiveIteratorIterator($recursiveDirectoryIterator, \RecursiveIteratorIterator::SELF_FIRST);
         $regexIterator = new \RegexIterator($iterator, '/^.+\.sql$/i', \RecursiveRegexIterator::GET_MATCH);
 
-        return $regexIterator;
+        $files = iterator_to_array($regexIterator);
+
+        uksort($files, function($a, $b) {
+            return strnatcmp($a, $b);
+        });
+
+        return $files;
     }
 
     /**
@@ -92,6 +99,8 @@ class Migrate
 
     /**
      * @return array
+     *
+     * @throws \InvalidArgumentException
      */
     public function run()
     {
@@ -114,7 +123,7 @@ class Migrate
 
                 $isSave = 0;
 
-                if ($this->builder->transaction()->state() === \Deimos\ORM\Transaction::STATE_COMMIT)
+                if ($this->builder->transaction()->state() === Transaction::STATE_COMMIT)
                 {
                     $model = $this->builder->createEntity(Model::class);
 
