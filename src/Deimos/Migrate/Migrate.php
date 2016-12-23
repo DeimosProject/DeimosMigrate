@@ -112,11 +112,9 @@ class Migrate
 
                 $this->builder->rawQuery($sql);
 
-                $error = $this->builder->connection()->errorInfo();
-
                 $isSave = 0;
 
-                if ($error[0] === '00000' || $error[0] === '01000')
+                if ($this->builder->transaction()->state() === \Deimos\ORM\Transaction::STATE_COMMIT)
                 {
                     $model = $this->builder->createEntity(Model::class);
 
