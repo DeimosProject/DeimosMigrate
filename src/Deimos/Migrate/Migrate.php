@@ -47,7 +47,7 @@ class Migrate
      */
     public function setPath($path)
     {
-        $this->path = $path;
+        $this->path = str_replace('\\', '/', $path);
     }
 
     /**
@@ -72,8 +72,8 @@ class Migrate
      */
     public function filename($filename)
     {
-        $filename = str_replace($this->path, '', $filename);
         $filename = str_replace('\\', '/', $filename);
+        $filename = str_replace($this->path, '', $filename);
 
         return trim($filename, '\\/');
     }
