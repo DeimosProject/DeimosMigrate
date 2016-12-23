@@ -72,9 +72,10 @@ class Migrate
      */
     public function filename($filename)
     {
+        $filename = str_replace($this->path, '', $filename);
         $filename = str_replace('\\', '/', $filename);
 
-        return trim(basename($filename), '/');
+        return trim($filename, '\\/');
     }
 
     /**
