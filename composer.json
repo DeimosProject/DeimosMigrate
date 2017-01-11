@@ -8,7 +8,7 @@
     }
   ],
   "require": {
-    "deimos/orm": "~0.3"
+    "deimos/orm": "~0.4"
   },
   "autoload": {
     "psr-4": {

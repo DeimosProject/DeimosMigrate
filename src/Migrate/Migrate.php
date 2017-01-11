@@ -3,7 +3,6 @@
 namespace Deimos\Migrate;
 
 use Deimos\ORM\Builder;
-use Deimos\ORM\Reflection;
 use Deimos\ORM\Transaction;
 
 class Migrate
@@ -31,7 +30,7 @@ class Migrate
      */
     protected function init()
     {
-        $tableName = Reflection::getTableName(Model::class);
+        $tableName = $this->builder->reflection()->getTableName(Model::class);
 
         $this->builder->rawQuery("CREATE TABLE IF NOT EXISTS `{$tableName}` (
             `id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -65,7 +64,8 @@ class Migrate
 
         $files = iterator_to_array($regexIterator);
 
-        uksort($files, function($a, $b) {
+        uksort($files, function ($a, $b)
+        {
             return strnatcmp($a, $b);
         });
 
