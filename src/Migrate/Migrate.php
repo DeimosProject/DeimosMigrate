@@ -2,26 +2,32 @@
 
 namespace Deimos\Migrate;
 
+use Deimos\Database\Database;
 use Deimos\ORM\Builder;
+use Deimos\ORM\ORM;
 use Deimos\ORM\Transaction;
 
 class Migrate
 {
 
     /**
-     * @var Builder
+     * @var ORM
      */
-    protected $builder;
+    protected $orm;
 
     /**
      * @var string
      */
     protected $path;
 
-    public function __construct(Builder $builder)
+    /**
+     * Migrate constructor.
+     *
+     * @param ORM $orm
+     */
+    public function __construct(ORM $orm)
     {
-        $this->builder = $builder;
-
+        $this->orm = $orm;
         $this->init();
     }
 
@@ -30,9 +36,10 @@ class Migrate
      */
     protected function init()
     {
-        $tableName = $this->builder->reflection()->getTableName(Model::class);
+        $this->orm->register('migrate', \Deimos\Migrate\Model::class);
+        $table = $this->orm->mapTable('migrate');
 
-        $this->builder->rawQuery("CREATE TABLE IF NOT EXISTS `{$tableName}` (
+        $this->orm->database()->rawQuery("CREATE TABLE IF NOT EXISTS `{$table}` (
             `id` INT(11) NOT NULL AUTO_INCREMENT,
             `item` VARCHAR(400) NOT NULL,
             PRIMARY KEY (`id`),
@@ -92,15 +99,13 @@ class Migrate
      */
     public function isMake($filename)
     {
-        return $this->builder->queryEntity(Model::class)
+        return $this->orm->repository('migrate')
                 ->where('item', $filename)
                 ->count() > 0;
     }
 
     /**
      * @return array
-     *
-     * @throws \InvalidArgumentException
      */
     public function run()
     {
@@ -115,31 +120,31 @@ class Migrate
 
             if (!$this->isMake($filename))
             {
-                $result = false;
+                $transaction = $this->orm->database()->transaction();
+                $sql         = file_get_contents($path);
+                $result      = false;
+                $isSave      = 0;
 
-                $sql = file_get_contents($path);
-
-                $this->builder->rawQuery($sql);
-
-                $isSave = 0;
-
-                if ($this->builder->transaction()->state() === Transaction::STATE_COMMIT)
+                $transaction->call(function (Database $database) use ($sql)
                 {
-                    $model = $this->builder->createEntity(Model::class);
+                    return $database->exec($sql);
+                });
 
-                    $model->item = $filename;
-
-                    $isSave = $model->save();
+                if ($transaction->state() === \Deimos\Database\Transaction::STATE_COMMIT)
+                {
+                    $isSave = $model = $this->orm->create(
+                            'migrate',
+                            ['item' => $filename]
+                        )->id() > 0;
                 }
 
-                if ($isSave)
-                {
-                    $storage[] = $filename . ' -- commit';
-                }
-                else
+                if (!$isSave)
                 {
                     $storage[] = $filename . ' -- error';
+                    break;
                 }
+
+                $storage[] = $filename . ' -- commit';
             }
         }
 

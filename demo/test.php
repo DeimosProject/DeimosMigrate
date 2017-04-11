@@ -1,18 +1,20 @@
 <?php
 
-include_once __DIR__ . '/../vendor/autoload.php';
+include_once dirname(__DIR__) . '/vendor/autoload.php';
 
-\Deimos\ORM\Connection::setConfig([
-    'default' => [
-        'dsn'      => 'mysql:host=localhost;dbname=test111',
-        'username' => 'root',
-        'password' => ''
-    ],
+$helper = new \Deimos\Helper\Helper();
+$slice  = new \Deimos\Slice\Slice($helper, [
+    'adapter'  => 'mysql',
+    //    'host'     => 'localhost', // optional
+    //    'port'     => 3306, // optional
+    'database' => 'test',
+    'username' => 'root',
+    'password' => 'root'
 ]);
 
-$builder = new \Deimos\ORM\Builder();
-
-$migrate = new \Deimos\Migrate\Migrate($builder);
+$database = new \Deimos\Database\Database($slice);
+$orm      = new \Deimos\ORM\ORM($helper, $database);
+$migrate  = new \Deimos\Migrate\Migrate($orm);
 
 $migrate->setPath(dirname(__DIR__) . '/sql');
 
