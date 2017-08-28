@@ -132,20 +132,13 @@ class Migrate
                     $isSave = $model->save();
                 }
 
-                if ($isSave)
-                {
-                    $storage[] = $filename . ' -- commit';
-                }
-                else
-                {
-                    $storage[] = $filename . ' -- error';
-                }
+                $storage[] = [(bool)$isSave, $filename];
             }
         }
 
         if ($result)
         {
-            $storage[] = 'Already on latest version!';
+            $storage[] = [true, 'Already on latest version!'];
         }
 
         return $storage;
