@@ -2,6 +2,7 @@
 
 include_once dirname(__DIR__) . '/vendor/autoload.php';
 
+// todo bavix/helper
 $helper = new \Deimos\Helper\Helper();
 $slice  = new \Deimos\Slice\Slice($helper, [
     'adapter'  => 'mysql',
